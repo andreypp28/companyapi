@@ -1,0 +1,61 @@
+<?php
+
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+
+class ModifyOrderDevicesTableName extends Migration
+{
+    use \WA\Database\Command\TablesRelationsAndIndexes;
+
+    protected $from = 'order_devices';
+    protected $to = 'order_device_variations';
+
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::table(
+            $this->from, function ($table) {
+                $table->dropForeign('order_devices_deviceid_foreign');
+                $table->dropColumn('deviceId');
+        });     
+
+        Schema::rename($this->from, $this->to);
+
+        Schema::table(
+            $this->to,
+            function ($table) {
+                $table->integer('deviceVariationId')->unsigned()->nullable();
+                $table->foreign('deviceVariationId')->references('id')->on('device_variations')->onDelete('cascade');
+            }
+        );
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::table(
+            $this->to, function ($table) {
+                $table->dropForeign('order_device_variations_devicevariationid_foreign');
+                $table->dropColumn('deviceVariationId');
+        });
+
+        Schema::rename($this->to, $this->from);
+
+        Schema::table(
+            $this->from,
+            function ($table) {
+                $table->integer('deviceId')->unsigned()->nullable();
+                $table->foreign('deviceId')->references('id')->on('devices')->onDelete('cascade');
+            }
+        );
+    }
+}
